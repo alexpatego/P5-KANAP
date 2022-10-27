@@ -10,12 +10,12 @@ function listProduct(kanap){
     kanap.forEach(products => {
         const {_id, imageUrl, altTxt, name, description} = products
 
-        const image = makeImage(imageUrl, altTxt)
+        const image = createImage(imageUrl, altTxt)
     
-        const anchor = makeAnchor(_id)
+        const anchor = createAnchor(_id)
         const article = document.createElement("article")
-        const h3 = makeH3(name)
-        const p = makeP(description)
+        const h3 = createH3(name)
+        const p = createP(description)
     
         appendElementsToArticle(article, [image, h3, p])
         appendArticleToAnchor(anchor, article)   
@@ -26,9 +26,6 @@ function listProduct(kanap){
     /* append elements to article */
 
 function appendElementsToArticle(article, array) {
-    //article.appendChild(image)
-    //article.appendChild(h3)
-    //article.appendChild(p)
     array.forEach(elements => {
         article.appendChild(elements)
     });
@@ -36,7 +33,7 @@ function appendElementsToArticle(article, array) {
 
 /* création balise <a> */
 
-function makeAnchor(id) {
+function createAnchor(id) {
     let anchor = document.createElement("a");
     anchor.href = "./product.html?id=" + id;
     return anchor  
@@ -52,22 +49,21 @@ function appendArticleToAnchor(anchor, article){
 
 /* création des balises enfant de Article */
 
-function makeImage(imageUrl, altTxt) {
+function createImage(imageUrl, altTxt) {
     const image = document.createElement("img")
     image.src = imageUrl
     image.alt = altTxt
     return image
 }
 
-
-function makeH3(name){
+function createH3(name){
     const h3 = document.createElement("h3")
     h3.textContent = name
     h3.classList.add("productName")
     return h3
 }
 
-function makeP(description){
+function createP(description){
     const p = document.createElement("p")
     p.textContent = description
     p.classList.add("productDescription")
