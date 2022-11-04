@@ -1,7 +1,7 @@
 /* On appelle l'api du serveur pour récupérer les produits */
 
 fetch("http://localhost:3000/api/products")
-    .then(res => res.json())
+    .then(response => response.json())
     .then((listProducts) => {
         kanap(listProducts);
     })
