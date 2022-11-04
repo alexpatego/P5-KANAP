@@ -6,9 +6,9 @@ fetch("http://localhost:3000/api/products")
         kanap(listProducts);
     })
 /* récupère la réponse en JSON, éléments traités sont ensuite appelés listProducts */
-    .catch((err) => {
+    .catch((error) => {
         document.querySelector(".titles").innerHTML = "<h1>erreur 404</h1>"
-        console.log("erreur 404, absence de ressource API:" + err);
+        console.log("erreur 404, absence de ressource API:" + error);
     });
 /* dans le cas d'une erreur, fait afficher un titre H1 d'erreur et un console.log d'erreur 404 */ 
 
