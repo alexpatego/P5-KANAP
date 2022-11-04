@@ -32,9 +32,9 @@ function kanap(listProducts) {
 
 /* creation de la balise <a> et de son id */
 
-function createAnchor(id) {
+function createAnchor(_id) {
     const anchor = document.createElement("a");
-    anchor.href ="./product.html?id=" + id;
+    anchor.href ="./product.html?id=" + _id;
     return anchor;
 }
 
