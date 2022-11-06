@@ -1,90 +1,117 @@
-const queryString = window.location.search;
-const urlParams = new URLSearchParams(queryString)
-const id = urlParams.get("id")
+/* récupération de l'id du produit grâce à l'url*/
+
+const params = new URLSearchParams(window.location.search)
+const id = params.get('id')
 let itemPrice = 0
-let imagUrl, altText = 0
-let itemName = ""
+let imagUrl, altText, itemName
+
+/* appel de l'api avec un fetch pour obtenir les produits et l'id */
 
 fetch(`http://localhost:3000/api/products/${id}`)
-    .then(response => response.json())
-    .then(res => productItem(res))
+ .then(response => response.json())
+ .then((kanap) => {
+    productItem(kanap);
+})
+/* récupère la réponse en JSON, éléments traités sont ensuite appelés listProducts */
+.catch((error) => {
+    document.querySelector(".item").innerHTML = "<h1>erreur 404</h1>"
+    console.log("erreur 404, absence de ressource API:" + error);
+});
+/* dans le cas d'une erreur, fait afficher un titre H1 d'erreur et un console.log d'erreur 404 */ 
 
-function productItem(kanap){
-    const {altTxt, colors, description, imageUrl, name, price} = kanap
+/* appel de l'API, affichage du produits et de ses élements*/
+function productItem(kanap) {
+    const {imageUrl, altTxt, name, price, description, colors} = kanap
     itemName = name
     itemPrice = price
     imgUrl = imageUrl
     altText = altTxt
     createImage(imageUrl, altTxt)
-    createH1(name)
+    createName(name)
     createPrice(price)
-    createP(description)
+    createDescription(description)
     createColors(colors)
-}
+};
 
-function createImage(imageUrl, altTxt){
+/* création de l'image et ajout à la div */
+function createImage(imageUrl, altTxt) {
     const image = document.createElement("img")
     image.src = imageUrl
     image.alt = altTxt
-    const parent = document.querySelector(".item__img")
-    parent.appendChild(image)
-}
+    document.querySelector(".item__img").appendChild(image)
+};
 
-function createH1(name){
-    const h1 = document.getElementById("title")
-    h1.textContent = name
-}
+/* création du titre de l'article */
+function createName(name) {
+    const title = document.getElementById("title")
+    title.innerHTML = name
+};
 
-function createPrice(price){
-    const prix = document.getElementById("price")
-    prix.textContent = price
-}
+/* création du prix */
+function createPrice(price) {
+    const span = document.getElementById("price")
+    span.innerHTML = price
+};
 
-function createP(description){
+/* création de la description */
+function createDescription(description) {
     const p = document.getElementById("description")
-    p.textContent = description
-}
+    p.innerHTML= description
+};
 
+/* création de l'option color */
 function createColors(colors) {
     const select = document.getElementById("colors")
     colors.forEach(color => {
         const option = document.createElement("option")
         option.value = color
-        option.textContent = color
+        option.innerHTML = color
         select.appendChild(option)
     })
-}
+};
+
+/* boutton addToCart*/
 
 const button = document.querySelector("#addToCart")
 button.addEventListener("click", handleClick)
 
+/* handleClick fonction */
+
 function handleClick() {
-    const color = document.getElementById("colors").value
-    const quantity = document.getElementById("quantity").value
+    const color = document.querySelector("#colors").value
+    const quantity = document.querySelector("#quantity").value
     if (orderIsInvalid(color, quantity)) return
     saveOrder(color, quantity)
     redirectToCart()
 }
 
+/* redirection avec confirmation ou non */
+
 function redirectToCart() {
-    window.location.href = "cart.html"
+    if (confirm("Commande enregistrée, voulez vous accédez au panier ?") == true) {
+        window.location.href = "../html/cart.html";
+    }
 }
 
+/* on enregristre la commande */
 function saveOrder(color, quantity) {
+    const key = `${id}-${color}`
     const dataCart = {
         id: id,
         color: color,
         quantity: Number(quantity),
+        name: itemName,
         price: itemPrice,
         imageUrl: imgUrl,
-        altTxt: altText,
+        altTxt: altText
     }
-    localStorage.setItem(id, JSON.stringify(dataCart))
+    localStorage.setItem(key, JSON.stringify(dataCart))
 }
 
-function orderIsInvalid(color, quantity){
-    if (color == null || color === "" || quantity == null || quantity == 0 ) {
-        alert("Please select a color and quantity")
+/* la commande est invalide, retourne ceci */
+function orderIsInvalid(color, quantity) {
+    if (color == null || color === "" || quantity == null || quantity == 0) {
+        alert("Veuillez sélectionner une couleur et une quantité")
         return true
-    } 
+    }
 }
