@@ -336,7 +336,6 @@ function getIdsFromCache() {
         const key = localStorage.key(i)
         const id = key.split("-")[0]
         ids.push(id)
-        console.log(id)
         }
     return ids
     }  
