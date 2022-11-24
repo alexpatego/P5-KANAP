@@ -235,7 +235,7 @@ function checkFirstName() {
             contact.firstName = "" // pas d'info contact
             errorFirstName.innerText = "Vous devez indiquer votre prénom en toute lettre." // on renvoit le message d'erreur
             errorFirstName.style.fontWeight = "bold"
-            errorFirstName.style.color = "#BA1D1A"
+            errorFirstName.style.color = "#ff8484"
             errorFirstName.style.fontSize = "1.3rem"
         }
         
@@ -261,7 +261,7 @@ function checkLastName() {
             contact.lastName = "" // pas d'info contact
             errorLastName.innerText = "Vous devez indiquer votre nom de famille en toute lettre." // on renvoit le message d'erreur
             errorLastName.style.fontWeight = "bold"
-            errorLastName.style.color = "#BA1D1A"
+            errorLastName.style.color = "#ff8484"
             errorLastName.style.fontSize = "1.3rem"
         }
         
@@ -271,7 +271,7 @@ checkLastName()
 
 // fonction qui vérifier l'adresse
 function checkAddress() {
-    let addressRegex = /^[a-zA-Z0-9\s,'-]*$/gi; 
+    let addressRegex = /\w+(\s\w+){2,}/; 
     validInputs
     
     address.addEventListener("change", e => {
@@ -286,7 +286,7 @@ function checkAddress() {
             contact.address = "" // pas d'info contact
             errorAddress.innerText = "Vous devez indiquer votre adresse avec des lettres et des chiffres" // on renvoit le message d'erreur
             errorAddress.style.fontWeight = "bold"
-            errorAddress.style.color = "#BA1D1A"
+            errorAddress.style.color = "#ff8484"
             errorAddress.style.fontSize = "1.3rem"
         }
         
@@ -311,7 +311,7 @@ function checkCity() {
             contact.city = "" // pas d'info contact
             errorCity.innerText = "Vous devez indiquer votre ville en toute lettre" // on renvoit le message d'erreur
             errorCity.style.fontWeight = "bold"
-            errorCity.style.color = "#BA1D1A"
+            errorCity.style.color = "#ff8484"
             errorCity.style.fontSize = "1.3rem"
         }
     })
@@ -335,7 +335,7 @@ function checkEmail() {
             contact.email = "" // pas d'info contact
             errorEmail.innerText = `Votre adresse email doit contenir un "@" et un "." afin de pouvoir être valider.` // on renvoit le message d'erreur
             errorEmail.style.fontWeight = "bold"
-            errorEmail.style.color = "#BA1D1A"
+            errorEmail.style.color = "#ff8484"
             errorEmail.style.fontSize = "1.3rem"
         }
         
