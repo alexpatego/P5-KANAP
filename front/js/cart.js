@@ -234,6 +234,9 @@ function checkFirstName() {
             validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.firstName = "" // pas d'info contact
             errorFirstName.innerText = "Vous devez indiquer votre prénom en toute lettre." // on renvoit le message d'erreur
+            errorFirstName.style.fontWeight = "bold"
+            errorFirstName.style.color = "#BA1D1A"
+            errorFirstName.style.fontSize = "1.3rem"
         }
         
     })
@@ -257,6 +260,9 @@ function checkLastName() {
             validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.lastName = "" // pas d'info contact
             errorLastName.innerText = "Vous devez indiquer votre nom de famille en toute lettre." // on renvoit le message d'erreur
+            errorLastName.style.fontWeight = "bold"
+            errorLastName.style.color = "#BA1D1A"
+            errorLastName.style.fontSize = "1.3rem"
         }
         
     })
@@ -265,7 +271,7 @@ checkLastName()
 
 // fonction qui vérifier l'adresse
 function checkAddress() {
-    let addressRegex = /^[A-Za-za0-9`\s]+$/gi;
+    let addressRegex = /^[a-zA-Z0-9\s,'-]*$/gi; 
     validInputs
     
     address.addEventListener("change", e => {
@@ -279,6 +285,9 @@ function checkAddress() {
             validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.address = "" // pas d'info contact
             errorAddress.innerText = "Vous devez indiquer votre adresse avec des lettres et des chiffres" // on renvoit le message d'erreur
+            errorAddress.style.fontWeight = "bold"
+            errorAddress.style.color = "#BA1D1A"
+            errorAddress.style.fontSize = "1.3rem"
         }
         
     })
@@ -301,6 +310,9 @@ function checkCity() {
             validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.city = "" // pas d'info contact
             errorCity.innerText = "Vous devez indiquer votre ville en toute lettre" // on renvoit le message d'erreur
+            errorCity.style.fontWeight = "bold"
+            errorCity.style.color = "#BA1D1A"
+            errorCity.style.fontSize = "1.3rem"
         }
     })
 }
@@ -322,6 +334,9 @@ function checkEmail() {
             validInputs > 0? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.email = "" // pas d'info contact
             errorEmail.innerText = `Votre adresse email doit contenir un "@" et un "." afin de pouvoir être valider.` // on renvoit le message d'erreur
+            errorEmail.style.fontWeight = "bold"
+            errorEmail.style.color = "#BA1D1A"
+            errorEmail.style.fontSize = "1.3rem"
         }
         
     })

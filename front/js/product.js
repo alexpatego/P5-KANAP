@@ -106,8 +106,8 @@ function saveOrder(color, quantity) {
 
 // la commande est invalide, retourne ceci 
 function orderIsInvalid(color, quantity) {
-    if (color == null || color === "" || quantity == null || quantity == 0) {
+    if (color == null || color === "" || quantity == null || quantity == 0 ) {
         alert("Veuillez sélectionner une couleur et une quantité")
         return true
-    }
+    } 
 }
