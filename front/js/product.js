@@ -1,9 +1,9 @@
 // récupération de l'id du produit grâce à l'url
 const params = new URLSearchParams(window.location.search)
 const id = params.get('id')
+console.log(window.location.search)
 let itemPrice = 0
 let imagUrl, altText, itemName
-
 // appel de l'api avec un fetch pour obtenir les produits et l'id 
 
 fetch(`http://localhost:3000/api/products/${id}`)
@@ -92,10 +92,14 @@ function redirectToCart() {
 // on enregristre la commande
 function saveOrder(color, quantity) {
     const key = `${id}-${color}`
+    const oldQuantity = quantity;
+    console.log(oldQuantity)
+    let newQuantity = Number(quantity-1) + Number(oldQuantity)
+    console.log(newQuantity)
     const dataCart = {
         id: id,
         color: color,
-        quantity: Number(quantity),
+        quantity: Number(newQuantity),
         name: itemName,
         price: itemPrice,
         imageUrl: imgUrl,
@@ -106,8 +110,8 @@ function saveOrder(color, quantity) {
 
 // la commande est invalide, retourne ceci 
 function orderIsInvalid(color, quantity) {
-    if (color == null || color === "" || quantity == null || quantity == 0 ) {
-        alert("Veuillez sélectionner une couleur et une quantité")
+    if (color == null || color === "" || quantity == null || quantity <= 0 || quantity > 100 ) {
+        alert("Veuillez sélectionner une couleur et une quantité entre 1 et 100")
         return true
     } 
 }

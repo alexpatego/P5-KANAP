@@ -4,8 +4,27 @@ getItemsFromCache()
 cart.forEach((item) => displayItem(item))
 //on les affiche ensuite
 // boutton order qui va etre ensuite appeller et définit plus tard
+
+////////////////////////////////////////////
+//comment recup le prix de l'item depuis l'id et non le LS
+// cart.forEach(item => retrievePrice(item.id))
+
+// function retrievePrice(id){
+//   fetch(`http://localhost:3000/api/products/${id}`)
+//       .then(res => res.json())
+//       .then(data => displayPrice(data.price))
+//       .catch(console.error)
+// }
+
+// function displayPrice(data){
+//     const p = document.createElement("p")
+//     p.textContent = data.price + " €"
+// }
+
+/////////////////////////////////////
 const orderButton = document.querySelector("#order")
 orderButton.addEventListener("click", (e) => submitForm(e))
+
 
 // on affiche les items qui sont dans le localStorage et on les push et on les parse 
 function getItemsFromCache() {
@@ -71,7 +90,7 @@ function createCartContent(item) {
 }
 
 // la description du produit contenant son prix, son nom, sa couleur
-function createCartDescription(item) {
+function createCartDescription(item, data) {
     const divDescription = document.createElement("div")
     divDescription.classList.add("cart__item__content__description")
         
@@ -80,7 +99,7 @@ function createCartDescription(item) {
 
     const p = document.createElement("p")
     p.textContent = item.color
-    
+
     const p2 = document.createElement("p")
     p2.textContent = item.price + " €"
     
@@ -116,6 +135,10 @@ function addQuantityToSettings(settings, item) {
     input.addEventListener("input", () => updatePriceAndQuantity(item.id, input.value, item, item.color))
     divQuantity.append(p, input)
     settings.appendChild(divQuantity)
+    ///////?????????????????? voir si pas possibilité de faire mieux
+    if(input.value > 100 || input.value < 1){
+        input.value = 1
+    }
 }
 
 // Update du cart et du localStorage
@@ -131,7 +154,9 @@ function updatePriceAndQuantity(id, newValue, item, color) {
     const itemToUpdate = cart.find((item) => item.id === id && item.color === color)
     itemToUpdate.quantity = Number(newValue)
     item.quantity = itemToUpdate.quantity
-
+    if(itemToUpdate.quantity > 100 || itemToUpdate.quantity === 0){
+        item.quantity = 0
+    }
     displayTotalQuantity()
     displayTotalPrice()
     saveNewDataToCache(item)
