@@ -25,8 +25,10 @@ function kanap(productItem) {
     itemPrice = price
     imgUrl = imageUrl
     altText = altTxt
-    createImage(imageUrl, altTxt)
+    const title = document.querySelector("title")
+    title.innerHTML = name
     createName(name)
+    createImage(imageUrl, altTxt)
     createPrice(price)
     createDescription(description)
     createColors(colors)
@@ -74,12 +76,12 @@ const button = document.querySelector("#addToCart")
 button.addEventListener("click", handleClick)
 
 // handleClick fonction 
-function handleClick() {
+function handleClick(item) {
     const color = document.querySelector("#colors").value
     const quantity = document.querySelector("#quantity").value
-    if (orderIsInvalid(color, quantity)) return
-    saveOrder(color, quantity)
-    redirectToCart()
+    // if (orderIsInvalid(color, quantity)) return
+    saveOrder(color, quantity, item)
+    // redirectToCart()
 }
 
 // redirection avec confirmation ou non
@@ -90,28 +92,34 @@ function redirectToCart() {
 }
 
 // on enregristre la commande
-function saveOrder(color, quantity) {
+function saveOrder(color, quantity, item) {
     const key = `${id}-${color}`
-    const oldQuantity = quantity;
-    console.log(oldQuantity)
-    let newQuantity = Number(quantity-1) + Number(oldQuantity)
-    console.log(newQuantity)
     const dataCart = {
         id: id,
         color: color,
-        quantity: Number(newQuantity),
+        quantity: Number(quantity),
         name: itemName,
-        price: itemPrice,
+        // price: itemPrice,
         imageUrl: imgUrl,
         altTxt: altText
     }
-    localStorage.setItem(key, JSON.stringify(dataCart))
+    const productOnLocalStorage = JSON.parse(localStorage.getItem(key));
+    console.log('avant productOnLocalStorage', productOnLocalStorage);
+    if (productOnLocalStorage) {
+    dataCart.quantity += productOnLocalStorage.quantity;
+    }
+
+    if (dataCart.color == null ||  dataCart.color === "") {
+    alert("Vous devez choisir une couleur");
+    } else if( dataCart.quantity > 100 || dataCart.quantity <= 0){
+    alert("Vous devez séléctionner une quantité entre 1 et 100");
+    } else {
+        localStorage.setItem(key, JSON.stringify(dataCart));
+        redirectToCart()
+    }
 }
 
 // la commande est invalide, retourne ceci 
-function orderIsInvalid(color, quantity) {
-    if (color == null || color === "" || quantity == null || quantity <= 0 || quantity > 100 ) {
-        alert("Veuillez sélectionner une couleur et une quantité entre 1 et 100")
-        return true
-    } 
-}
+
+
+
