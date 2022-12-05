@@ -1,53 +1,62 @@
 const cart = []
+let cartTemp = []
+
+let totalPrice = 0
 // définit le cart, les items
 getItemsFromCache()
 cart.forEach((item) => displayItem(item))
 //on les affiche ensuite
 // boutton order qui va etre ensuite appeller et définit plus tard
-
 ////////////////////////////////////////////
-//comment recup le prix de l'item depuis l'id et non le LS
-// cart.forEach(item => retrievePrice(item.id))
-
-// function retrievePrice(id){
-//   fetch(`http://localhost:3000/api/products/${id}`)
-//       .then(res => res.json())
-//       .then(data => displayPrice(data.price))
-//       .catch(console.error)
-// }
-
-// function displayPrice(data){
-//     const p = document.createElement("p")
-//     p.textContent = data.price + " €"
-// }
+console.log(cart)
 
 /////////////////////////////////////
 const orderButton = document.querySelector("#order")
 orderButton.addEventListener("click", (e) => submitForm(e))
 
-
 // on affiche les items qui sont dans le localStorage et on les push et on les parse 
 function getItemsFromCache() {
     const numberOfItems = localStorage.length
     for (let i = 0; i < numberOfItems; i++) {
-      const item = localStorage.getItem(localStorage.key(i)) || ""
-      const itemObject = JSON.parse(item)
-      cart.push(itemObject)
+        const item = localStorage.getItem(localStorage.key(i)) || ""
+        const itemObject = JSON.parse(item)
+        cart.push(itemObject)
     }
+    cartTemp = cart
 }
+// cart.forEach((item) => retrievePrice(item))
+
+// function retrievePrice(item){
+//     fetch(`http://localhost:3000/api/products/${item.id}`)
+//     .then(res=>res.json)
+//     .then(data => {
+//         displayPrice(data)
+//         console.log(data)
+//         console.log(data.price)
+//     })
+//     .catch(err => console.error(err))
+// }
+
+// function displayPrice(data){
+//     const price = data.price
+//     console.log("prix", price)
+//     const p2 = document.createElement("p")
+//     p2.textContent = price + " €"
+//     createCartContent(p2)
+// }
 
 // Affichage des items
 function displayItem(item) {
     const article = createArticle(item)
     const imageDiv = createImage(item)
     const cardItemContent = createCartContent(item)
-      
+
     article.append(imageDiv, cardItemContent)
-      
+
     displayArticle(article)
     displayTotalQuantity()
-    displayTotalPrice()
-} 
+    displayTotalPrice(false)
+}
 
 // appen de l'article à cart__items
 function displayArticle(article) {
@@ -61,14 +70,14 @@ function createArticle(item) {
     article.dataset.id = item.id
     article.dataset.color = item.color
     return article
-// comparer avec le dataset.id et le dataset.color, si élément trouvé mettre à jour le panier
+    // comparer avec le dataset.id et le dataset.color, si élément trouvé mettre à jour le panier
 }
 
 // créer l'image de l'item
 function createImage(item) {
     const divImage = document.createElement("div")
     divImage.classList.add("cart__item__img")
-        
+
     const image = document.createElement("img")
     image.src = item.imageUrl
     image.alt = item.altTxt
@@ -81,37 +90,52 @@ function createImage(item) {
 function createCartContent(item) {
     const divContent = document.createElement("div")
     divContent.classList.add("cart__item__content")
-        
+
     const description = createCartDescription(item)
     const settings = createCartSettings(item)
-        
+
     divContent.append(description, settings)
     return divContent
 }
 
 // la description du produit contenant son prix, son nom, sa couleur
-function createCartDescription(item, data) {
+function createCartDescription(item) {
     const divDescription = document.createElement("div")
     divDescription.classList.add("cart__item__content__description")
-        
+
     const h2 = document.createElement("h2")
     h2.textContent = item.name
 
     const p = document.createElement("p")
     p.textContent = item.color
 
-    const p2 = document.createElement("p")
-    p2.textContent = item.price + " €"
-    
-    divDescription.append(h2, p, p2)
+    fetch(`http://localhost:3000/api/products/${item.id}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log(data.price)
+            cartTemp.forEach((el, index) => {
+                if (el.id == item.id) {
+                    el.price = data.price
+                    cartTemp[index] = el
+                }
+            });
+            const p2 = document.createElement("p")
+            p2.textContent = data.price + " €"
+            divDescription.appendChild(p2)
+            displayTotalPrice(false)
+        })
+        .catch(console.error)
+
+    divDescription.append(h2, p)
     return divDescription
 }
+
 
 // settings du cart et gestion de la quantité des produits et la fonctionnalité de suprression
 function createCartSettings(item) {
     const settings = document.createElement("div")
     settings.classList.add("cart__item__content__settings")
-    
+
     addQuantityToSettings(settings, item)
     addDeleteToSettings(settings, item)
     return settings
@@ -132,33 +156,43 @@ function addQuantityToSettings(settings, item) {
     input.min = "1"
     input.max = "100"
     input.value = item.quantity
-    input.addEventListener("input", () => updatePriceAndQuantity(item.id, input.value, item, item.color))
+    input.addEventListener("input", () => updatePriceAndQuantity(item, input.value))
     divQuantity.append(p, input)
     settings.appendChild(divQuantity)
     ///////?????????????????? voir si pas possibilité de faire mieux
-    if(input.value > 100 || input.value < 1){
+    if (input.value > 100 || input.value < 1) {
         input.value = 1
     }
 }
 
 // Update du cart et du localStorage
 function saveNewDataToCache(item) {
-    const dataToSave = JSON.stringify(item)
+    const dataToSave = item
+    delete dataToSave.price
+    console.log('avant', dataToSave)
     const key = `${item.id}-${item.color}`
-    localStorage.setItem(key, dataToSave)
+    localStorage.setItem(key, JSON.stringify(dataToSave))
 }
 
 // update du prix et de la quantité des produits
-function updatePriceAndQuantity(id, newValue, item, color) {
-// va chercher le premier item qui a un id et une color === à id et color
-    const itemToUpdate = cart.find((item) => item.id === id && item.color === color)
+function updatePriceAndQuantity(item, newValue) {
+    // va chercher le premier item qui a un id et une color === à id et color
+    const itemToUpdate = cart.find((el) => el.id === item.id && el.color === item.color)
     itemToUpdate.quantity = Number(newValue)
     item.quantity = itemToUpdate.quantity
-    if(itemToUpdate.quantity > 100 || itemToUpdate.quantity === 0){
-        item.quantity = 0
+    if (itemToUpdate.quantity > 100 || itemToUpdate.quantity <= 0) {
+        item.quantity = 1
     }
+    cartTemp.forEach((el, index) => {
+        let price = el.price
+        if (el.id == itemToUpdate.id && el.color == itemToUpdate.color) {
+            el.quantity = itemToUpdate.quantity;
+            el.price = price
+            cartTemp[index] = el;
+        }
+    })
     displayTotalQuantity()
-    displayTotalPrice()
+    displayTotalPrice(true)
     saveNewDataToCache(item)
 }
 
@@ -170,9 +204,19 @@ function displayTotalQuantity() {
 }
 
 // on affiche le prix total
-function displayTotalPrice() {
+function displayTotalPrice(init) {
     const spanPrice = document.querySelector("#totalPrice")
-    const total = cart.reduce((total, item) => total + item.price * item.quantity, 0)
+    if (init) {
+        cartTemp.forEach((el, index) => {
+            fetch(`http://localhost:3000/api/products/${el.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    el.price = data.price
+                    cartTemp[index] = el
+                })
+        })
+    }
+    var total = cartTemp.reduce((t, el) => t + el.price * el.quantity, 0)
     spanPrice.textContent = total
 }
 
@@ -181,11 +225,10 @@ function addDeleteToSettings(settings, item) {
     const divDelete = document.createElement("div")
     divDelete.classList.add("cart__item__content__settings__delete")
     divDelete.addEventListener("click", () => {
-        if (confirm("Êtes vous certain de vouloir supprimer cet article ") == true){
-        deleteCartItem(item)
-        } 
+        if (confirm("Êtes vous certain de vouloir supprimer cet article ") == true) {
+            deleteCartItem(item)
+        }
     })
-
     const p = document.createElement("p")
     p.textContent = "Supprimer"
     divDelete.appendChild(p)
@@ -196,9 +239,9 @@ function addDeleteToSettings(settings, item) {
 function deleteCartItem(item) {
     const itemToDelete = cart.findIndex(
         (product) => product.id === item.id && product.color === item.color
-        )
+    )
     cart.splice(itemToDelete, 1)
-    displayTotalPrice()
+    displayTotalPrice(true)
     displayTotalQuantity()
     deleteDataFromCache(item)
     deleteArticleFromPage(item)
@@ -214,10 +257,10 @@ function deleteDataFromCache(item) {
 function deleteArticleFromPage(item) {
     const articleToDelete = document.querySelector(
         `article[data-id="${item.id}"][data-color="${item.color}"]`
-        )
+    )
     articleToDelete.remove()
 }
-                      
+
 // FORM CART
 
 // définit l'ensemble des variables qui vont être utiliser
@@ -247,11 +290,11 @@ let products = [];
 function checkFirstName() {
     let nameRegex = /^[A-Za-za`\s]+$/gi;
     validInputs
-// ajoute un +1 a validInputs pour vérifier l'ensemble des inputs
+    // ajoute un +1 a validInputs pour vérifier l'ensemble des inputs
     firstName.addEventListener("change", e => {
         firstName.value = e.target.value
-        
-        if(nameRegex.test(firstName.value)) {
+
+        if (nameRegex.test(firstName.value)) {
             validInputs++; // on ajoute +1 si c'est == true
             contact.firstName = firstName.value; // on ajoute le firstName à contact
             errorFirstName.innerText = "" // on n'affiche pas l'erreur
@@ -263,9 +306,9 @@ function checkFirstName() {
             errorFirstName.style.color = "#ff8484"
             errorFirstName.style.fontSize = "1.3rem"
         }
-        
+
     })
-    
+
 }
 checkFirstName()
 
@@ -273,11 +316,11 @@ checkFirstName()
 function checkLastName() {
     let nameRegex = /^[A-Za-za`\s]+$/gi;
     validInputs
-    
+
     lastName.addEventListener("change", e => {
         lastName.value = e.target.value
-        
-        if(nameRegex.test(lastName.value)) {
+
+        if (nameRegex.test(lastName.value)) {
             validInputs++; // on ajoute +1 si c'est == true
             contact.lastName = lastName.value; // on ajoute le lastName à contact
             errorLastName.innerText = ""
@@ -289,20 +332,20 @@ function checkLastName() {
             errorLastName.style.color = "#ff8484"
             errorLastName.style.fontSize = "1.3rem"
         }
-        
+
     })
 }
 checkLastName()
 
 // fonction qui vérifier l'adresse
 function checkAddress() {
-    let addressRegex = /\w+(\s\w+){2,}/; 
+    let addressRegex = /\w+(\s\w+){2,}/;
     validInputs
-    
+
     address.addEventListener("change", e => {
         address.value = e.target.value
-        
-        if(addressRegex.test(address.value)) {
+
+        if (addressRegex.test(address.value)) {
             validInputs++; // on ajoute +1 si c'est == true
             contact.address = address.value; // on ajoute le address à contact
             errorAddress.innerText = ""
@@ -314,7 +357,7 @@ function checkAddress() {
             errorAddress.style.color = "#ff8484"
             errorAddress.style.fontSize = "1.3rem"
         }
-        
+
     })
 }
 checkAddress()
@@ -323,15 +366,15 @@ checkAddress()
 function checkCity() {
     let cityRegex = /^[A-Za-za`\s]+$/gi;
     validInputs
-    
+
     city.addEventListener("change", e => {
         city.value = e.target.value
-        
-        if(cityRegex.test(city.value)) {
+
+        if (cityRegex.test(city.value)) {
             validInputs++; // on ajoute +1 si c'est == true
             contact.city = city.value // on ajoute le city à contact
             errorCity.innerText = ""
-        } else if (!cityRegex.test(city.value) || city.value === "" || city.value === null){
+        } else if (!cityRegex.test(city.value) || city.value === "" || city.value === null) {
             validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.city = "" // pas d'info contact
             errorCity.innerText = "Vous devez indiquer votre ville en toute lettre" // on renvoit le message d'erreur
@@ -347,43 +390,43 @@ checkCity()
 function checkEmail() {
     let emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     validInputs
-    
+
     email.addEventListener("change", e => {
         email.value = e.target.value
-        
-        if(emailRegex.test(email.value)) {
+
+        if (emailRegex.test(email.value)) {
             validInputs++; // on ajoute +1 si c'est == true
             contact.email = email.value // on ajoute le email à contact
             errorEmail.innerText = ""
-        } else if(!emailRegex.test(email.value) || email.value === "" || email.value === null){
-            validInputs > 0? validInputs-- : validInputs; // si la valeur est nulle alors == false
+        } else if (!emailRegex.test(email.value) || email.value === "" || email.value === null) {
+            validInputs > 0 ? validInputs-- : validInputs; // si la valeur est nulle alors == false
             contact.email = "" // pas d'info contact
             errorEmail.innerText = `Votre adresse email doit contenir un "@" et un "." afin de pouvoir être valider.` // on renvoit le message d'erreur
             errorEmail.style.fontWeight = "bold"
             errorEmail.style.color = "#ff8484"
             errorEmail.style.fontSize = "1.3rem"
         }
-        
+
     })
 }
 checkEmail()
 
 // récupération de l'id depuis le localStorage
 function getIdsFromCache() {
-// va correspondre au products renvoyer par le body
+    // va correspondre au products renvoyer par le body
     const ids = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
         const id = key.split("-")[0]
         ids.push(id)
-        }
+    }
     return ids
-    }  
-  
+}
+
 // on vérifier l'order et le body 
-function checkOrder(){
-    const body = { contact, products:getIdsFromCache()}
-// fetch method POST des données pour afficher les orders
+function checkOrder() {
+    const body = { contact, products: getIdsFromCache() }
+    // fetch method POST des données pour afficher les orders
     fetch("http://localhost:3000/api/products/order", {
         method: "POST",
         headers: {
@@ -391,25 +434,24 @@ function checkOrder(){
         },
         body: JSON.stringify(body)
     })
-    .then((res) => res.json())
-    .then((data) => 
-    {
-// on se dirige vers la page order ou sera afficher notre orderID
-        window.location = `confirmation.html` + "?orderId=" + data.orderId;
-    })
-    .catch((error) => {
-        console.log("Une erreur semble s'ettre produite à la récupération de données de l'API")
-        console.log(error)
-    })      
+        .then((res) => res.json())
+        .then((data) => {
+            // on se dirige vers la page order ou sera afficher notre orderID
+            window.location = `confirmation.html` + "?orderId=" + data.orderId;
+        })
+        .catch((error) => {
+            console.log("Une erreur semble s'ettre produite à la récupération de données de l'API")
+            console.log(error)
+        })
 }
-    
+
 function submitForm(e) {
     e.preventDefault()
-// on vérifier que les validInputs sont bien à +5 pour vérifier que l'ensemble des inputs sont corrects
-        if(validInputs === 5 && confirm('Voulez-vous valider votre commande ?')){
-// on lance la fonction checkOrder
-            checkOrder()
-        } else if (validInputs === 0){
-            alert("Veuillez remplir le formulaire pour confirmer la commande.")
-        }
+    // on vérifier que les validInputs sont bien à +5 pour vérifier que l'ensemble des inputs sont corrects
+    if (validInputs === 5 && confirm('Voulez-vous valider votre commande ?')) {
+        // on lance la fonction checkOrder
+        checkOrder()
+    } else if (validInputs === 0) {
+        alert("Veuillez remplir le formulaire pour confirmer la commande.")
     }
+}
