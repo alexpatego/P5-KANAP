@@ -2,7 +2,6 @@
 const params = new URLSearchParams(window.location.search)
 const id = params.get('id')
 console.log(window.location.search)
-let itemPrice = 0
 let imagUrl, altText, itemName
 // appel de l'api avec un fetch pour obtenir les produits et l'id 
 
@@ -22,7 +21,6 @@ fetch(`http://localhost:3000/api/products/${id}`)
 function kanap(productItem) {
     const {imageUrl, altTxt, name, price, description, colors} = productItem
     itemName = name
-    itemPrice = price
     imgUrl = imageUrl
     altText = altTxt
     const title = document.querySelector("title")
@@ -79,14 +77,17 @@ button.addEventListener("click", handleClick)
 function handleClick(item) {
     const color = document.querySelector("#colors").value
     const quantity = document.querySelector("#quantity").value
-    // if (orderIsInvalid(color, quantity)) return
     saveOrder(color, quantity, item)
-    // redirectToCart()
 }
+
+//input afin d'empecher la possibilité d'ajouter un nombre négatif au panier après avoir séléctionner le produit
+// console.log(input.value)
 
 // redirection avec confirmation ou non
 function redirectToCart() {
-    if (confirm("Commande enregistrée, voulez vous accédez au panier ?") == true) {
+    if (quantity > 100 || quantity <= 0){
+        alert("vous ne pouvez pas sélectionner ce nombre d'articles")
+    } else if(confirm("Commande enregistrée, voulez vous accédez au panier ?") == true) {
         window.location.href = "../html/cart.html";
     }
 }
@@ -99,13 +100,11 @@ function saveOrder(color, quantity, item) {
         color: color,
         quantity: Number(quantity),
         name: itemName,
-        // price: itemPrice,
         imageUrl: imgUrl,
         altTxt: altText
     }
     const productOnLocalStorage = JSON.parse(localStorage.getItem(key));
-    console.log('avant productOnLocalStorage', productOnLocalStorage);
-    if (productOnLocalStorage) {
+    if (productOnLocalStorage && quantity > 1) {
     dataCart.quantity += productOnLocalStorage.quantity;
     }
 
@@ -113,13 +112,10 @@ function saveOrder(color, quantity, item) {
     alert("Vous devez choisir une couleur");
     } else if( dataCart.quantity > 100 || dataCart.quantity <= 0){
     alert("Vous devez séléctionner une quantité entre 1 et 100");
-    } else {
+    } 
+    else {
         localStorage.setItem(key, JSON.stringify(dataCart));
         redirectToCart()
     }
 }
-
-// la commande est invalide, retourne ceci 
-
-
 

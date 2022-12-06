@@ -6,44 +6,25 @@ let totalPrice = 0
 getItemsFromCache()
 cart.forEach((item) => displayItem(item))
 //on les affiche ensuite
-// boutton order qui va etre ensuite appeller et définit plus tard
-////////////////////////////////////////////
-console.log(cart)
 
-/////////////////////////////////////
+// boutton order qui va etre ensuite appeller et définit plus tard
 const orderButton = document.querySelector("#order")
 orderButton.addEventListener("click", (e) => submitForm(e))
 
-// on affiche les items qui sont dans le localStorage et on les push et on les parse 
+
+// on affiche les items qui sont dans le localStorage et on les push et on les parse
 function getItemsFromCache() {
     const numberOfItems = localStorage.length
     for (let i = 0; i < numberOfItems; i++) {
-        const item = localStorage.getItem(localStorage.key(i)) || ""
-        const itemObject = JSON.parse(item)
-        cart.push(itemObject)
+        const item = localStorage.getItem(localStorage.key(i))
+        if (item != null ){
+            const itemObject = JSON.parse(item)
+            cart.push(itemObject)
+        }
     }
     cartTemp = cart
 }
-// cart.forEach((item) => retrievePrice(item))
-
-// function retrievePrice(item){
-//     fetch(`http://localhost:3000/api/products/${item.id}`)
-//     .then(res=>res.json)
-//     .then(data => {
-//         displayPrice(data)
-//         console.log(data)
-//         console.log(data.price)
-//     })
-//     .catch(err => console.error(err))
-// }
-
-// function displayPrice(data){
-//     const price = data.price
-//     console.log("prix", price)
-//     const p2 = document.createElement("p")
-//     p2.textContent = price + " €"
-//     createCartContent(p2)
-// }
+//création d'un cartTemp pour stocker le prix
 
 // Affichage des items
 function displayItem(item) {
@@ -86,7 +67,7 @@ function createImage(item) {
     return divImage
 }
 
-// création du content des items qui va contenir la description et les settings       
+// création du content des items qui va contenir la description et les settings
 function createCartContent(item) {
     const divContent = document.createElement("div")
     divContent.classList.add("cart__item__content")
@@ -112,7 +93,6 @@ function createCartDescription(item) {
     fetch(`http://localhost:3000/api/products/${item.id}`)
         .then(res => res.json())
         .then(data => {
-            console.log(data.price)
             cartTemp.forEach((el, index) => {
                 if (el.id == item.id) {
                     el.price = data.price
@@ -141,7 +121,7 @@ function createCartSettings(item) {
     return settings
 }
 
-// gestion de la quantité des produits 
+// gestion de la quantité des produits
 function addQuantityToSettings(settings, item) {
     const divQuantity = document.createElement("div")
     divQuantity.classList.add("cart__item__content__settings__quantity")
@@ -159,7 +139,7 @@ function addQuantityToSettings(settings, item) {
     input.addEventListener("input", () => updatePriceAndQuantity(item, input.value))
     divQuantity.append(p, input)
     settings.appendChild(divQuantity)
-    ///////?????????????????? voir si pas possibilité de faire mieux
+    ///Input reste a 1
     if (input.value > 100 || input.value < 1) {
         input.value = 1
     }
@@ -169,9 +149,14 @@ function addQuantityToSettings(settings, item) {
 function saveNewDataToCache(item) {
     const dataToSave = item
     delete dataToSave.price
-    console.log('avant', dataToSave)
     const key = `${item.id}-${item.color}`
-    localStorage.setItem(key, JSON.stringify(dataToSave))
+    if (dataToSave.quantity <= 0) {
+        dataToSave.quantity = 1
+        let qty = localStorage.setItem(item.quantity) 
+        submitForm(qty)
+    }else{
+        localStorage.setItem(key, JSON.stringify(dataToSave))
+    }
 }
 
 // update du prix et de la quantité des produits
@@ -183,6 +168,8 @@ function updatePriceAndQuantity(item, newValue) {
     if (itemToUpdate.quantity > 100 || itemToUpdate.quantity <= 0) {
         item.quantity = 1
     }
+
+    if (cart.quantity < 1)
     cartTemp.forEach((el, index) => {
         let price = el.price
         if (el.id == itemToUpdate.id && el.color == itemToUpdate.color) {
@@ -199,8 +186,12 @@ function updatePriceAndQuantity(item, newValue) {
 // on affiche la quantité total de produits
 function displayTotalQuantity() {
     const spanQuantity = document.querySelector("#totalQuantity")
-    const total = cart.reduce((total, item) => total + item.quantity, 0)
-    spanQuantity.textContent = total
+    let total = cart.reduce((total, item) => total + item.quantity, 0)
+    spanQuantity.textContent = total 
+    total < 0 ? total = null: total
+    // console.log(total)
+    // console.log(cartTemp)
+    // console.log(cartTemp[1].quantity)
 }
 
 // on affiche le prix total
@@ -217,7 +208,7 @@ function displayTotalPrice(init) {
         })
     }
     var total = cartTemp.reduce((t, el) => t + el.price * el.quantity, 0)
-    spanPrice.textContent = total
+    spanPrice.textContent = total 
 }
 
 // Création de la div pour la suppression d'un article
@@ -423,7 +414,7 @@ function getIdsFromCache() {
     return ids
 }
 
-// on vérifier l'order et le body 
+// on vérifier l'order et le body
 function checkOrder() {
     const body = { contact, products: getIdsFromCache() }
     // fetch method POST des données pour afficher les orders
@@ -445,13 +436,22 @@ function checkOrder() {
         })
 }
 
+
 function submitForm(e) {
     e.preventDefault()
+    
+    for (let i = 0; i < cartTemp.length; i++) {
+        if(cartTemp[i].quantity <= 0 || cartTemp[i].quantity < 1){
+            alert("Vous n'avez pas un bon nombre d'article") 
+            return
+        }
+    } 
     // on vérifier que les validInputs sont bien à +5 pour vérifier que l'ensemble des inputs sont corrects
     if (validInputs === 5 && confirm('Voulez-vous valider votre commande ?')) {
-        // on lance la fonction checkOrder
-        checkOrder()
-    } else if (validInputs === 0) {
-        alert("Veuillez remplir le formulaire pour confirmer la commande.")
+            // on lance la fonction checkOrder
+            checkOrder()
+    } else if (validInputs === 0 ) {
+            alert("Veuillez remplir le formulaire pour confirmer la commande.")
     }
+
 }
